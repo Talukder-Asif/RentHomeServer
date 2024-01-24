@@ -11,7 +11,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:4173",],
+    origin: ["http://localhost:5173", "http://localhost:4173"],
     credentials: true,
   })
 );
@@ -48,9 +48,9 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-
     const database = client.db("HouseRent");
-    const userCollection = database.collection("UserData");  
+    const userCollection = database.collection("UserData");
+    const houseCollection = database.collection("HouseData");
 
     // Post user details
     app.post("/user", async (req, res) => {
@@ -64,6 +64,13 @@ async function run() {
       res.send(result);
     });
 
+    // Post House Details
+    app.post("/addhouse", async (req, res) => {
+      const data = req.body;
+      const result = await houseCollection?.insertOne(data);
+      res.send(result);
+    });
+
     // Update user information to database
     app.put("/user/:email", async (req, res) => {
       const userEmail = req.params.email;
@@ -74,6 +81,9 @@ async function run() {
           name: data.name,
           email: data.email,
           photo: data.photo,
+          Rent: data.Rent,
+          role: data.role,
+          password: data.password
         },
       };
       const options = { upsert: true };
@@ -93,7 +103,63 @@ async function run() {
       res.send(result);
     });
 
+    // Get user data from database
+    app.get("/houses", async (req, res) => {
+      const result = await houseCollection.find().toArray();
+      res.send(result);
+    });
 
+    // Get user data from database
+    app.get("/dashboard/houses/:email", async (req, res) => {
+      const userEmail = req.params.email;
+      const quary = { createdBy: userEmail };
+      const result = await houseCollection.find(quary).toArray();
+      res.send(result);
+    });
+
+    // Delete a house
+    app.delete("/house/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await houseCollection.deleteOne(query);
+      res.send(result);
+    });
+    // get indivisual house data by id
+    app.get("/house/:id", async (req, res) => {
+      const id = req.params.id;
+      const quary = { _id: new ObjectId(id) };
+      const result = await houseCollection.findOne(quary);
+      res.send(result);
+    });
+    // Update House information to database
+    app.put("/house/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const data = req.body;
+      const updatedDoc = {
+        $set: {
+          name: data.name,
+          image: data.image,
+          address: data.address,
+          city: data.city,
+          details: data.details,
+          bedroom: data.bedroom,
+          bathroom: data.bathroom,
+          createdBy: data.createdBy,
+          size: data.size,
+          rent: data.rent,
+          phone: data.phone,
+          Deadline: data.Deadline,
+        },
+      };
+      const options = { upsert: true };
+      const result = await houseCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+      res.send(result);
+    });
 
     // JWT
     app.post("/jwt", async (req, res) => {
