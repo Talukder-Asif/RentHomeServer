@@ -71,6 +71,19 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get("/allhouse/search", async (req, res) => {
+      const houseName = req.query.query;
+      const results = await houseCollection
+        .find({ name: { $regex: houseName, $options: "i" } })
+        .toArray();
+      res.send(results);
+    });
+
+
+
+
+
     // Update user information to database
     app.put("/user/:email", async (req, res) => {
       const userEmail = req.params.email;
