@@ -11,7 +11,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:4173"],
+    origin: ["http://localhost:5173", "http://localhost:4173","https://house-rent-sooty.vercel.app", "https://house-rent-asif-talukders-projects.vercel.app"],
     credentials: true,
   })
 );
